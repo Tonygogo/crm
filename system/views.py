@@ -5,6 +5,7 @@ from .models import User
 from hashlib import md5
 from django.core.exceptions import ObjectDoesNotExist
 import json
+from crm.common import ParamException, is_empty
 # Create your views here.
 
 
@@ -14,45 +15,41 @@ def login(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
     # 非空验证
-    if username is None:
-        return JsonResponse({'code': 0, 'message': '请输入账号！'})
-    if password is None:
-        return JsonResponse({'code': 0, 'message': '请输入密码！'})
+    is_empty(username, message='请输入账号')
+    is_empty(password, message='请输入密码！')
     # 如果用户已登录，不需要登录
     user_str = request.session.get('login_user')
-    if user_str:
-        return JsonResponse({'code': 2, 'message': '用户已登录！'})
+    is_empty(user_str, code=2, message='用户已登录！')
+
     # 先将password进行md5加密
     md = md5(password.encode(encoding='utf-8'))
     password_md5 = md.hexdigest()
     try:
-        user = User.objects.values('id', 'userName', 'trueName', 'phone', 'email').get(userName=username, password=password_md5)
+        user = User.objects.values('id', 'userName', 'trueName', 'phone',
+                                   'email').get(userName=username, password=password_md5)
         # 保持登录状态
         request.session['login_user'] = json.dumps(user)
         return JsonResponse({'code': 1, 'message': '登录成功！'})
     except ObjectDoesNotExist as e:
-        return JsonResponse({'code': 0, 'message': '用户或密码失败！'})
+        raise ParamException(message='用户或密码失败！')
+        # return JsonResponse({'code': 0, 'message': '用户或密码失败！'})
 
 
 @require_POST
 def update_password(request):
     # a) 是否用户处于登录状态
     user_str = request.session.get('login_user')
-    if user_str is None:
-        return JsonResponse({'code': -1, 'message':'请登录'})
+    is_empty(user_str, message= '请登录')
 
     # b) 非空校验，新密码和确认密码也要校验
     old_password = request.POST.get('old_password')
-    if old_password is None or old_password == '':
-        return JsonResponse({'code': 0, 'message': '请输入原密码'})
+    is_empty(old_password, message='请输入原密码')
     new_password = request.POST.get('new_password')
-    if new_password is None or new_password == '':
-        return JsonResponse({'code': 0, 'message': '请输入新密码'})
+    is_empty(new_password, message='请输入新密码')
     confirm_new_password = request.POST.get('confirm_new_password')
-    if confirm_new_password is None or confirm_new_password == '':
-        return JsonResponse({'code': 0, 'message': '请输入确认新密码'})
+    is_empty(confirm_new_password, message='请输入确认新密码')
     if new_password != confirm_new_password:
-        return JsonResponse({'code': 0, 'message': '两次密码输入不相等'})
+        raise ParamException.create_error('两次密码输入不相等')
 
 
     # c) 原密码是否正确，就是将原密码(加密)  和数据库中的密码进行对比
