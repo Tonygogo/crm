@@ -1,0 +1,247 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>营销机会管理列表</title>
+    <link rel="stylesheet" type="text/css" href="{% static "/jquery-easyui-1.3.3/themes/metro/easyui.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "/jquery-easyui-1.3.3/themes/icon.css" %}">
+    <script type="text/javascript" src="{% static "/jquery-easyui-1.3.3/jquery.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "/jquery-easyui-1.3.3/jquery.easyui.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "/jquery-easyui-1.3.3/locale/easyui-lang-zh_CN.js" %}"></script>
+    <script type="text/javascript" src="{% static "/jquery-easyui-1.3.3/jquery.edatagrid.js" %}"></script>
+</head>
+<body>
+
+    {# 数据列表 #}
+    <table id="dg" class="easyui-datagrid" title="营销机会管理"
+                data-options="pagination:true,singleSelect:false,collapsible:true,url:'{% url "sales:select_for_page" %}',
+                method:'GET'" toolbar="#tb" fit="True" rownumbers="true", fitColumns="true">
+        <thead>
+            <tr>
+                <th field="cb" checkbox="true" align="center"></th>
+                <th field="id" width="50" align="center">编号</th>
+                <th field="chanceSource" width="200" align="center" hidden="true" >机会来源</th>
+                <th field="customerId" width="50" align="center" hidden="true">客户ID</th>
+                <th field="customerName" width="100" align="center">客户名称</th>
+                <th field="cgjl" width="50" align="center" hidden="true">成功几率</th>
+                <th field="overview" width="200" align="center">概要</th>
+                <th field="linkMan" width="100" align="center">联系人</th>
+                <th field="linkPhone" width="100" align="center">联系电话</th>
+                <th field="description" width="200" align="center" hidden="true">机会描述</th>
+                <th field="createMan" width="100" align="center">创建人</th>
+                <th field="createDate" width="100" align="center">创建时间</th>
+                <th field="assignMan" width="200" align="center" >指派人</th>
+                <th field="assignTime" width="200" align="center" hidden="true">指派时间</th>
+                <th field="state" width="100" align="center" formatter="formatState">状态</th>
+                <th field="devResult" width="200" align="center" hidden="true">客户开发状态</th>
+            </tr>
+        </thead>
+    </table>
+
+    {# toolbar 工具栏 #}
+    <div id="tb" style="padding:5px;height:auto">
+        <div style="margin-bottom:5px">
+            <a href="javascript:openAddDialog()" class="easyui-linkbutton" iconCls="icon-add" plain="true">创建</a>
+            <a href="javascript:openModifyDialog()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+            <a href="javascript:deleteSaleChance()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+        </div>
+        <div>
+            客户名称：<input type="text" id="s_customerName" size="20" onkeydown="if(event.keyCode==13) searchSaleChance()"/>
+            概要：<input type="text" id="s_overview" size="20" onkeydown="if(event.keyCode==13) searchSaleChance()"/>
+            创建人：<input type="text" id="s_createMan" size="20" onkeydown="if(event.keyCode==13) searchSaleChance()"/>
+            分配状态:
+            <select class="easyui-combobox" panelHeight="auto" style="width:100px" id="s_state">
+                <option value="">全部</option>
+                <option value="0">未分配</option>
+                <option value="1">已分配</option>
+            </select>
+            <a href="javascript:searchSaleChance()" class="easyui-linkbutton" iconCls="icon-search">Search</a>
+        </div>
+    </div>
+
+    {#	弹出框#}
+	<div id="dlg" class="easyui-dialog" style="width:700px;height:450px;padding: 10px 20px"
+     closed="true" buttons="#dlg-buttons">
+
+	    <form id="fm" method="post">
+{#            <input name="csrfmiddlewaretoken" value="{{ csrf_token }}" type="hidden" />#}
+            {# 修改时数据的主键 #}
+            <input type="hidden" id="id" name="id" />
+	        <table cellspacing="8px">
+	            <tr>
+	                <td>客户名称：</td>
+	                <td>
+	                	<input type="hidden" id="customerName" name="customerName" />
+	                	<input class="easyui-combobox" id="customerId" name="customerId"
+	                	data-options="panelHeight:'auto',editable:false,valueField:'id',textField:'name', url:'{% url 'customer:find_all' %}', method:'get'"
+	                	/> &nbsp;<font color="red">*</font>
+	                <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	                <td>机会来源</td>
+	                <td><input type="text" id="chanceSource" name="chanceSource" /></td>
+	            </tr>
+	            <tr>
+	                <td>联系人：</td>
+	                <td><input type="text" id="linkMan" name="linkMan" /></td>
+	                <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	                <td>联系电话：</td>
+	                <td><input type="text" id="linkPhone" name="linkPhone" /></td>
+	            </tr>
+	            <tr>
+	                <td>成功几率(%)：</td>
+	                <td><input type="text" id="cgjl" name="cgjl" class="easyui-numberbox" data-options="min:0,max:100" required="true"/>&nbsp;<font color="red">*</font></td>
+	                <td colspan="3">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	            </tr>
+	            <tr>
+	                <td>概要：</td>
+	                <td colspan="4"><input type="text" id="overview" name="overview" style="width: 420px"/></td>
+	            </tr>
+	            <tr>
+	                <td>机会描述：</td>
+	                <td colspan="4">
+	                    <textarea rows="5" cols="50" id="description" name="description" style="margin: 0px;width: 421px;height: 75px;resize: none;"></textarea>
+	                </td>
+	            </tr>
+
+	            <tr>
+	                <td>指派给：</td>
+	                <td><input class="easyui-combobox" id="assignMan" name="assignMan"
+	                	data-options="panelHeight:'auto',editable:false,valueField:'trueName',textField:'trueName',url:'{% url 'system:find_customer_manager' %}', method:'GET'"/></td>
+	                <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	            </tr>
+	        </table>
+	    </form>
+	</div>
+
+    {#	弹出框按钮#}
+	<div id="dlg-buttons">
+	    <a href="javascript:saveSaleChance()" class="easyui-linkbutton" iconCls="icon-ok">保存</a>
+	    <a href="javascript:closeSaleChanceDialog()" class="easyui-linkbutton" iconCls="icon-cancel">关闭</a>
+	</div>
+
+    <script>
+        // 搜索
+        function searchSaleChance(){
+            var customerName = $("#s_customerName").val();
+            var overview = $("#s_overview").val();
+            var createMan = $("#s_createMan").val();
+            var state = $("#s_state").combobox('getValue')
+
+            $('#dg').datagrid('load',{
+                customerName: customerName,
+                overview: overview,
+                createMan: createMan,
+                state: state
+            });
+        }
+
+        // 格式化状态
+        function formatState(value,row,index){
+            {#console.log(value); // 当前字段的值#}
+            {#console.log(row); // 这是行数据对象#}
+            {#console.log(index); // 这是列表的下标#}
+             if (value == 0){
+                return '未分配'
+            } else if(value == 1) {
+                return '已分配'
+            } else {
+                return '未知'
+             }
+        }
+
+        // 打开创建窗体
+        function openAddDialog() {
+            $("#dlg").dialog('open').dialog('setTitle', '添加营销机会管理')
+        }
+
+        // 打开修改窗体
+        function openModifyDialog() {
+            // 先要判断是否选择记录进行修改
+            rows = $("#dg").datagrid('getSelections'); // 获取选中第一行
+            if (rows.length != 1) {
+                $.messager.alert('提示', '只能选择一行记录进行修改！');
+                return
+            }
+            row = rows[0]
+            console.log(row);
+            if (row == null) {
+                $.messager.alert('提示', '请选择一行记录进行修改！');
+                return
+            }
+            $("#dlg").dialog('open').dialog('setTitle', '修改营销机会管理');
+            $('#fm').form('load', row);
+        }
+
+        // 关闭窗体
+        function closeSaleChanceDialog() {
+            $("#fm").form('clear');
+            $("#dlg").dialog('close');
+        }
+
+        // 保存
+        function saveSaleChance(){
+            var customerName = $("#customerId").combobox('getText');
+            if (customerName == null || customerName.trim().length == 0) {
+                $.messager.alert("提示", "请选择客户名称！");
+                return
+            }
+            $("#customerName").val(customerName);
+            var isTrue = $("#fm").form("validate");
+            if (!isTrue) {
+                return
+            }
+            data = $("#fm").serialize();
+            console.log(data);
+            var id = $("#id").val();
+            url = '';
+            if (id == null && !isNaN(id)) {
+                url = "/sales/save_sale_chance/";
+            } else {
+                url = "/sales/update_sale_chance/";
+            }
+            $.post(url, data, function(resp) {
+                $.messager.alert('提示', resp.message);
+                if (resp.code == 1){
+                    $("#fm").form('clear');
+                    $("#dlg").dialog('close'); // 关闭窗体
+                    $("#dg").datagrid('reload'); // 重新加载数据
+                }
+            });
+            // TODO 采用easyUI的form进行提交
+        }
+
+        // 删除 逻辑删除
+        function deleteSaleChance(){
+            // 获取所有选中的记录
+            rows = $("#dg").datagrid('getSelections');
+            if (rows.length == 0) {
+                $.messager.alert('提示', '至少选择一条记录进行删除！');
+                return
+            }
+            ids = []
+            for (var i=0; i < rows.length; i++) {
+                ids.push(rows[i].id)
+            }
+            $.messager.confirm('确认', '确认要删除这<font color="red">['+ ids.length +']</font>条记录吗？', function(r){
+                if (r){
+                    $.post('/sales/delete_sale_chances/', {ids: ids.join(',')}, function(resp){
+                        $.messager.alert('系统提示', resp.message);
+                        if (resp.code == 1){
+                            $("#dg").datagrid('reload')
+                        }
+                    })
+                }
+            });
+
+
+
+        }
+
+
+
+    </script>
+
+
+
+</body>
+</html>

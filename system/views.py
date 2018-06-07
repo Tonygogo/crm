@@ -70,3 +70,12 @@ def update_password(request):
 def logout(request):
     request.session.flush()
     return redirect('index:index')
+
+
+# 查询客户经理
+def find_customer_manager(request):
+    managers = User.objects.values("id", 'trueName')\
+                           .filter(roles__roleName='客户经理')\
+                           .order_by('-id').all()
+    managers = list(managers)
+    return JsonResponse(managers, safe=False)

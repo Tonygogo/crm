@@ -1,3 +1,17 @@
+function openTab(title, url, iconCls) {
+    tab = $('#tabs').tabs('exists', title);
+    if (tab) { //如果存在就选中
+        $('#tabs').tabs('select', title);
+    } else { // 不存在就创建，同时使用iframe标签进行局部刷新
+        $('#tabs').tabs('add',{
+            title: title,
+            content:"<iframe frameborder=0 scrolling='auto' style='width:100%;height:100%' src='"+ url +"'></iframe>",
+            closable:true,
+            iconCls:iconCls
+        });
+    }
+}
+
 // 打开dialog对话框
 function openPasswordModifyDialog() {
     $("#dlg").dialog('open').dialog('setTitle', '修改密码');

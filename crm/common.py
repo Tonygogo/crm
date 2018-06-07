@@ -19,7 +19,7 @@ class CrmMiddleware(MiddlewareMixin):
 
     # 处理异常机制
     def process_exception(self, request, exception):
-
+        print(exception)
         if isinstance(exception, ParamException):
             result = {'code': exception.code, 'message': exception.message}
         else:
