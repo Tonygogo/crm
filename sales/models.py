@@ -1,10 +1,10 @@
 from django.db import models
 
 
-class SaleChanceManager(models.Manager):
+class ModelManager(models.Manager):
 
     def get_queryset(self):
-        return super(SaleChanceManager, self).get_queryset().filter(isValid=1)
+        return super(ModelManager, self).get_queryset().filter(isValid=1)
 
 
 # Create your models here.
@@ -38,7 +38,28 @@ class SaleChance(models.Model):
     createDate = models.DateTimeField(db_column='create_date')
     updateDate = models.DateTimeField(max_length=20, db_column='update_date')
 
-    objects = SaleChanceManager()
+    objects = ModelManager()
 
     class Meta:
         db_table = 't_sale_chance'
+
+
+# 客户计划model
+class CusDevPlan(models.Model):
+    # 关联营销机会
+    saleChance = models.ForeignKey(SaleChance, db_constraint=False,
+                                   db_column='sale_chance_id', on_delete=models.DO_NOTHING)
+    # 计划内容
+    planItem = models.CharField(max_length=300, db_column='plan_item')
+    # 计划时间
+    planDate = models.DateTimeField(max_length=20, db_column='plan_date')
+    # 执行效果
+    exeAffect = models.CharField(max_length=100, db_column='exe_affect')
+    isValid = models.IntegerField(db_column='is_valid')
+    createDate = models.DateTimeField(db_column='create_date')
+    updateDate = models.DateTimeField(max_length=20, db_column='update_date')
+
+    objects = ModelManager()
+
+    class Meta:
+        db_table = 't_cus_dev_plan'

@@ -1,14 +1,14 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator
-from .models import SaleChance
+from .models import SaleChance, CusDevPlan
 from django.http.response import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.utils import timezone
 import json
 from django.views.decorators.csrf import csrf_exempt
-from crm.common import is_empty
-
+from crm.common import *
 # Create your views here.
+
 
 # 营销机会管理的首页
 def index(request):
@@ -24,7 +24,9 @@ def select_for_page(request):
     page = request.GET.get('page', 1)
     # 分页查询：1、构建一个QuerySet 2、构造一个Paginator对象
     # 3、使用Paginator的page()方法进行数据查询，以及count属性获取所有记录
-    object_list = SaleChance.objects.extra(select={'createDate': "select DATE_FORMAT(create_date, '%%Y-%%m-%%d %%H:%%i:%%s')"})\
+    select_params = {'createDate': "select DATE_FORMAT(create_date, '%%Y-%%m-%%d %%H:%%i:%%s')",
+                     'assignTime': "select DATE_FORMAT(assign_time, '%%Y-%%m-%%d %%H:%%i:%%s')"}
+    object_list = SaleChance.objects.extra(select=select_params)\
                                     .values('id', 'chanceSource', 'customerId', 'customerName', 'cgjl',
                                      'overview', 'linkMan', 'linkPhone', 'description', 'createMan',
                                      'assignMan', 'assignTime', 'state', 'devResult', 'isValid',
@@ -38,13 +40,19 @@ def select_for_page(request):
         object_list = object_list.filter(overview__icontains=overview)
 
     create_man = request.GET.get('createMan')
-
     if create_man:
         object_list = object_list.filter(createMan__icontains=create_man)
+
     state = request.GET.get('state')
     if state:
         object_list = object_list.filter(state=state)
+
+    dev_result = request.GET.get('devResult')
+    if dev_result:
+        object_list = object_list.filter(devResult=dev_result)
+
     p = Paginator(object_list, page_size)
+
     # 获取每页的数据
     data = p.page(page).object_list
     # 将转化成list进行json输出
@@ -110,11 +118,78 @@ def update_sale_chance(request):
 @require_POST
 @csrf_exempt
 def delete_sale_chances(request):
-    ids = request.POST.get('ids')
-    # 判断
-    is_empty(ids, message="请选择记录进行删除!")
+    # ids = request.POST.get('ids')
+    # # 判断
+    # is_empty(ids, message="请选择记录进行删除!")
+    #
+    # SaleChance.objects.filter(pk__in=ids.split(',')).update(isValid=0)
+    # return JsonResponse({"code": 1, "message": "删除成功！"})
+    return common_delete()
 
-    SaleChance.objects.filter(pk__in=ids.split(',')).update(isValid=0)
-    return JsonResponse({"code": 1, "message": "删除成功！"})
+def plan_index(request):
+    return render(request, "plan_index.html")
 
 
+def cus_dev_index(request, sale_chance_id):
+    show = request.GET.get('show')
+    # 读取营销机会信息 -- 使用get方式获取数据，不存在会报异常 ObjetDoesnotExist
+    sale_chance = SaleChance.objects.get(pk=sale_chance_id)
+    return render(request, "cus_dev_plan.html", {"sale_chance":sale_chance, 'show':show})
+
+
+# 获取营销机会下的所有计划开发项
+@csrf_exempt
+def cus_dev_list(request, sale_chance_id):
+
+    cus_dev_plans = CusDevPlan.objects.extra(select={'planDate': 'date_format(plan_date, "%%Y-%%m-%%d")'})\
+        .values('id', 'planItem', 'planDate', 'exeAffect').filter(saleChance__id=sale_chance_id)
+    cus_dev_plans = list(cus_dev_plans)
+    return JsonResponse(cus_dev_plans, safe=False)
+
+
+@csrf_exempt
+@require_POST
+def cus_dev_add(request, sale_chance_id):
+    # 基本参数校验
+    # TODO
+    data = request.POST.dict()
+    # 删除isNewRecord这个值
+    del data['isNewRecord']
+    # 获取营销机会对象
+    sale_chance = SaleChance.objects.get(pk=sale_chance_id)
+    data['saleChance'] = sale_chance
+    data['isValid'] = 1
+    data['createDate'] = timezone.now()
+    data['updateDate'] = timezone.now()
+    CusDevPlan.objects.create(**data)
+
+    # 要更新营销机会的开发状态为开发中
+    if sale_chance.devResult != 1:
+        SaleChance.filter(pk=sale_chance_id).update(devResult=1)
+
+    return JsonResponse({'code':1, 'message':'添加成功'})
+
+@csrf_exempt
+@require_POST
+def cus_dev_delete(request, sale_chance_id):
+    pk = request.POST.get('id')
+    CusDevPlan.objects.filter(pk=pk).update(isValid=0, updateDate=timezone.now())
+    return JsonResponse({'code':1, 'message':'删除成功'})
+
+
+@csrf_exempt
+@require_POST
+def cus_dev_update(request, sale_chance_id):
+    data = request.POST.dict()
+    pk = data.pop('id')
+    data['updateDate'] = timezone.now()
+    CusDevPlan.objects.filter(pk=pk).update(**data)
+    return JsonResponse({'code': 1, 'message': '修改成功'})
+
+
+@csrf_exempt
+@require_POST
+def update_dev_result(request, sale_chance_id):
+    dev_result = request.POST.get('devResult')
+    SaleChance.objects.filter(pk=sale_chance_id).update(devResult=dev_result, updateDate=timezone.now())
+    return JsonResponse({'code': 1, 'message': '操作成功'})

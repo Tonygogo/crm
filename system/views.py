@@ -19,7 +19,8 @@ def login(request):
     is_empty(password, message='请输入密码！')
     # 如果用户已登录，不需要登录
     user_str = request.session.get('login_user')
-    is_empty(user_str, code=2, message='用户已登录！')
+    if user_str:
+        raise ParamException(code=2, message='用户已登录！')
 
     # 先将password进行md5加密
     md = md5(password.encode(encoding='utf-8'))

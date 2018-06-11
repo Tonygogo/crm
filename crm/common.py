@@ -2,7 +2,6 @@ from django.utils.deprecation import MiddlewareMixin
 from django.http.response import JsonResponse
 from django.shortcuts import render
 
-
 class ParamException(Exception):
 
     def __init__(self, code=0, message='系统异常，请联系管理员！'):
@@ -36,3 +35,12 @@ class CrmMiddleware(MiddlewareMixin):
 def is_empty(value, code=0, message='系统异常，请联系管理员'):
    if value is None:
        raise ParamException(code, message)
+
+
+def common_delete(request, model):
+    ids = request.POST.get('ids')
+    # 判断
+    is_empty(ids, message="请选择记录进行删除!")
+
+    model.objects.filter(pk__in=ids.split(',')).update(isValid=0)
+    return JsonResponse({"code": 1, "message": "删除成功！"})
