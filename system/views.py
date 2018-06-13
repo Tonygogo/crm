@@ -75,7 +75,7 @@ def logout(request):
 
 # 查询客户经理
 def find_customer_manager(request):
-    managers = User.objects.values("id", 'trueName')\
+    managers = User.objects.values("id", 'userName', 'trueName')\
                            .filter(roles__roleName='客户经理')\
                            .order_by('-id').all()
     managers = list(managers)

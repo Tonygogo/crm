@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>服务创建</title>
+    <link rel="stylesheet" type="text/css" href="{% static "/jquery-easyui-1.3.3/themes/metro/easyui.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "/jquery-easyui-1.3.3/themes/icon.css" %}">
+    <script type="text/javascript" src="{% static "/jquery-easyui-1.3.3/jquery.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "/jquery-easyui-1.3.3/jquery.easyui.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "/jquery-easyui-1.3.3/locale/easyui-lang-zh_CN.js" %}"></script>
+    <script type="text/javascript" src="{% static "/jquery-easyui-1.3.3/jquery.edatagrid.js" %}"></script>
+    <script type="text/javascript" src="{% static "/js/customer.serve.create.js" %}"></script>
+</head>
+<body style="margin: 15px">
+
+<div id="p" class="easyui-panel" title="客服服务创建" style="width: 700px;height: 350px;padding: 10px">
+    <form id="fm" method="post">
+        <table cellspacing="15px">
+            <tr>
+                <td>服务类型：</td>
+                <td>
+                    <input class="easyui-combobox" id="serveType" name="serveType"
+                           data-options="panelHeight:'auto',editable:false,valueField:'dataDicValue',
+                           textField:'dataDicValue',url:'{% url "basic:datadic_list" %}?dataDicName=服务类型',
+                           method:'get'"/>&nbsp;<font color="red">*</font>
+                </td>
+                <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                <td>客户：</td>
+                <td><input type="text" id="customer" name="customer" class="easyui-validatebox" required="true"/>&nbsp;<font color="red">*</font></td>
+            </tr>
+            <tr>
+                <td>概要：</td>
+                <td colspan="4">
+                    <input type="text" id="overview" name="overview" style="width: 419px" class="easyui-validatebox" required="true"/>&nbsp;<font color="red">*</font>
+                </td>
+            </tr>
+            <tr>
+                <td>服务请求：</td>
+                <td colspan="4">
+                    <textarea id="serviceRequest" name="serviceRequest" rows="5" cols="49" class="easyui-validatebox" required="true"></textarea>&nbsp;<font color="red">*</font>
+                </td>
+            </tr>
+            <input type="hidden" name="state" value="新创建"/>
+            <input type="hidden" id="createPeople" name="createPeople" value="{{ userName }}" />
+            <tr>
+                <td colspan="4"></td>
+                <td>
+                    <a href="javascript:saveCustomerService()" class="easyui-linkbutton" iconCls="icon-ok">保存</a>&nbsp;&nbsp;
+                    <a href="javascript:resetValue()" class="easyui-linkbutton" iconCls="icon-reset">重置</a>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+</body>
+</html>

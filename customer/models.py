@@ -50,7 +50,7 @@ class Customer(models.Model):
     dsdjh = models.CharField(max_length=20)
     # 国税
     gsdjh = models.CharField(max_length=20)
-    # 状态
+    # 状态0=正常 1=暂时流失 2=真正流失
     state = models.IntegerField()
     isValid = models.IntegerField(db_column='is_valid')
     createDate = models.DateTimeField(db_column='create_date', auto_now_add=True)
@@ -150,3 +150,46 @@ class OrdersDetail(models.Model):
     class Meta:
         db_table = 't_order_details'
 
+
+# 客户流失表
+class CustomerLoss(models.Model):
+    # 客户编号
+    cusNo = models.CharField(max_length=40, db_column='cus_no')
+    # 客户名称
+    cusName = models.CharField(max_length=20, db_column='cus_name')
+    # 客户经理
+    cusManager = models.CharField(max_length=20, db_column='cus_manager')
+    # 上次下单日期
+    lastOrderTime = models.DateTimeField(db_column='last_order_time', auto_now_add=True)
+    # 确认流失日期
+    confirmLossTime = models.DateTimeField(db_column='confirm_loss_time', auto_now_add=True)
+    # 状态 0=暂缓流失 1=确认流失
+    state = models.IntegerField()
+    # 流失原因
+    lossReason = models.CharField(max_length=1000, db_column='loss_reason')
+
+    isValid = models.IntegerField(db_column='is_valid')
+    createDate = models.DateTimeField(db_column='create_date', auto_now_add=True)
+    updateDate = models.DateTimeField(db_column='update_date', auto_now_add=True)
+    objects = ModelManager()
+
+    class Meta:
+        db_table = 't_customer_loss'
+
+
+# 流失暂缓措施
+class CustomerReprieve(models.Model):
+
+    customerLoss = models.ForeignKey(CustomerLoss, db_column='loss_id', db_constraint=False,
+                                     on_delete=models.DO_NOTHING)
+    # 采取措施
+    measure = models.CharField(max_length=1000, db_column='measure')
+
+    isValid = models.IntegerField(db_column='is_valid')
+    createDate = models.DateTimeField(db_column='create_date', auto_now_add=True)
+    updateDate = models.DateTimeField(db_column='update_date', auto_now_add=True)
+
+    objects = ModelManager()
+
+    class Meta:
+        db_table = 't_customer_reprieve'

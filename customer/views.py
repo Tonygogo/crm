@@ -17,6 +17,7 @@ def find_all(request):
     customers = list(customers)
     return JsonResponse(customers, safe=False)
 
+
 # 列表
 def index(request):
     return render(request, 'customer.html')
@@ -329,3 +330,129 @@ def order_detail(request, order_id):
     data = p.page(page).object_list
     data = list(data)
     return JsonResponse({'total': p.count, 'rows': data})
+
+
+# 客户流失主页
+def loss_index(request):
+    return render(request, "loss_index.html")
+
+
+
+# 分页查询客户流失列表
+@require_GET
+def customer_loss_query(request):
+    page_size = request.GET.get('rows', 10)
+    page = request.GET.get('page', 1)
+    select = {'lastOrderTime': "SELECT DATE_FORMAT(last_order_time, '%%Y-%%m-%%d %%H:%%i:%%s')",
+              'confirmLossTime': "SELECT DATE_FORMAT(confirm_loss_time, '%%Y-%%m-%%d %%H:%%i:%%s')"
+              }
+    queryset = CustomerLoss.objects.extra(select=select).values('id', 'cusNo', 'cusName', 'cusManager',
+                                           'lastOrderTime', 'confirmLossTime',
+                                           'state', 'lossReason').order_by("-id").all()
+
+    # 构建搜索条件
+    cus_name = request.GET.get('cusName')
+    if cus_name:
+        queryset = queryset.filter(cusName__icontains=cus_name)
+    cus_manager = request.GET.get('cusManager')
+    if cus_manager:
+        queryset = queryset.filter(cusManager__icontains=cus_manager)
+    state = request.GET.get('state')
+    if state:
+        queryset = queryset.filter(state=state)
+
+    # 构建分页对象
+    p = Paginator(queryset, page_size)
+
+    # 获取数据
+    data = p.page(page).object_list
+    total = p.count
+
+    # 返回数据
+    return JsonResponse({'rows': list(data), 'total': total})
+
+
+# 客户流失暂缓主页
+def reprieve_index(request, loss_id):
+    # 先查询流失的信息
+    select = {'lastOrderTime': "SELECT DATE_FORMAT(last_order_time, '%%Y-%%m-%%d %%H:%%i:%%s')"
+              }
+    loss = CustomerLoss.objects.extra(select=select).values('id', 'cusNo',  'cusName', 'cusManager',
+                                           'lastOrderTime').get(pk=loss_id)
+    # 跳转到模板
+    return render(request, 'reprieve_index.html', loss)
+
+
+# 查询流失客户下的暂缓措施
+@csrf_exempt
+def select_reprieve(request, loss_id):
+    data = CustomerReprieve.objects.values('id', 'measure')\
+        .filter(customerLoss__id=loss_id).order_by('-id').all()
+    return JsonResponse(list(data), safe=False)
+
+
+# 添加暂缓措施
+@csrf_exempt
+@require_POST
+def add_reprieve(request, loss_id):
+    # 获取参数
+    measure = request.POST.get('measure')
+    is_empty(measure, message="请输入暂缓的措施！")
+    reprieve = dict()
+    loss = CustomerLoss.objects.get(pk=loss_id)
+    reprieve['customerLoss'] = loss
+    reprieve['measure'] = measure
+    reprieve['createDate'] = timezone.now()
+    reprieve['updateDate'] = timezone.now()
+    reprieve['isValid'] = 1
+
+    # 保存
+    obj = CustomerReprieve.objects.create(**reprieve)
+    result = {'id':obj.id, 'measure':obj.measure}
+    return JsonResponse(result)
+
+
+# 修改暂缓措施
+@csrf_exempt
+@require_POST
+def update_reprieve(request, loss_id):
+    measure = request.POST.get('measure')
+    pk = request.POST.get('id')
+    reprieve = dict()
+    reprieve['measure'] = measure
+    reprieve['updateDate'] = timezone.now()
+    CustomerReprieve.objects.filter(pk=pk).update(**reprieve)
+    # return JsonResponse({'code': 1, 'message': '修改成功！'})
+    return JsonResponse(request.POST.dict())
+
+
+# 删除暂缓措施
+@csrf_exempt
+@require_POST
+def delete_reprieve(request, loss_id):
+    pk = request.POST.get('id')
+    CustomerReprieve.objects.filter(pk=pk).update(isValid=0, updateDate=timezone.now())
+    return JsonResponse({'code': 1, 'message': '删除成功！'})
+
+
+
+# 确认流失
+@csrf_exempt
+@require_POST
+def confirm_loss(request, loss_id):
+    loss_reason = request.POST.get('lossReason')
+    is_empty(loss_reason, message='请输入流失原因')
+    # 更新t_customer_loss表流失原因以及确认流失状态
+    loss = CustomerLoss.objects.get(pk=loss_id)
+    loss.lossReason = loss_reason
+    loss.state = 1
+    loss.updateDate = timezone.now()
+    loss.confirmLossTime = timezone.now()
+    loss.save()
+    # CustomerLoss.objects.filter(pk=loss_id).update(lossReason=loss_reason, state=1)
+    # 更新t_customer表状态为确认流失状态
+    # loss = CustomerLoss.objects.get(pk=loss_id)
+    Customer.objects.filter(khno=loss.cusNo).update(state=2)
+    return JsonResponse({'code': 1, 'message': '操作成功！'})
+
+

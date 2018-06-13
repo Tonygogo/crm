@@ -3,6 +3,17 @@ from . import views
 
 app_name = 'customer'
 urlpatterns = [
+    path('<int:loss_id>/confirm_loss/', views.confirm_loss, name='confirm_loss'),
+    path('<int:loss_id>/delete_reprieve/', views.delete_reprieve, name='delete_reprieve'),
+    path('<int:loss_id>/update_reprieve/', views.update_reprieve, name='update_reprieve'),
+    path('<int:loss_id>/add_reprieve/', views.add_reprieve, name='add_reprieve'),
+    path('<int:loss_id>/select_reprieve/', views.select_reprieve, name='select_reprieve'),
+    path('<int:loss_id>/reprieve_index/', views.reprieve_index, name='reprieve_index'),
+    path('customer_loss_query/', views.customer_loss_query, name='customer_loss_query'),
+    path('loss_index/', views.loss_index, name='loss_index'),
+
+
+
     path('<int:order_id>/order_detail/', views.order_detail, name='order_detail'),
     path('<int:order_id>/find/', views.find, name='find'),
     path('<int:customer_id>/select_customer_order/', views.select_customer_order, name='select_customer_order'),
