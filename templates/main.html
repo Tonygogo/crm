@@ -55,14 +55,14 @@
             <a href="javascript:openTab('服务归档','{% url "serve:index" "archive"  %}','icon-fwgd')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-fwgd'" style="width: 150px;">服务归档</a>
         </div>
     	<div title="统计报表"  data-options="iconCls:'icon-tjbb'" style="padding:10px">
-            <a href="javascript:openTab('客户贡献分析','/report/0','icon-khgxfx')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-khgxfx'" style="width: 150px;">客户贡献分析</a>
-            <a href="javascript:openTab('客户构成分析','/report/1','icon-khgcfx')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-khgcfx'" style="width: 150px;">客户构成分析</a>
-            <a href="javascript:openTab('客户服务分析','/report/2','icon-khfwfx')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-khfwfx'" style="width: 150px;">客户服务分析</a>
-            <a href="javascript:openTab('客户流失分析','/report/3','icon-khlsfx')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-khlsfx'" style="width: 150px;">客户流失分析</a>
+            <a href="javascript:openTab('客户贡献分析','{% url "report:customer_contribute_index" %}','icon-khgxfx')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-khgxfx'" style="width: 150px;">客户贡献分析</a>
+            <a href="javascript:openTab('客户构成分析','{% url "report:customer_component_index" %}','icon-khgcfx')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-khgcfx'" style="width: 150px;">客户构成分析</a>
+            <a href="javascript:openTab('客户服务分析','{% url "report:customer_serve_index" %}','icon-khfwfx')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-khfwfx'" style="width: 150px;">客户服务分析</a>
+            <a href="javascript:openTab('客户流失分析','{% url "report:customer_loss_index" %}','icon-khlsfx')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-khlsfx'" style="width: 150px;">客户流失分析</a>
         </div>
         <div title="基础数据管理"  data-options="iconCls:'icon-jcsjgl'" style="padding:10px">
-            <a href="javascript:openTab('数据字典管理','/datadic/index','icon-sjzdgl')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-sjzdgl'" style="width: 150px;">数据字典管理</a>
-            <a href="javascript:openTab('产品信息查询','/product/index','icon-cpxxgl')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-cpxxgl'" style="width: 150px;">产品信息查询</a>
+            <a href="javascript:openTab('数据字典管理','{% url "basic:datadic_index" %}','icon-sjzdgl')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-sjzdgl'" style="width: 150px;">数据字典管理</a>
+            <a href="javascript:openTab('产品信息查询','{% url "basic:product_index" %}','icon-cpxxgl')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-cpxxgl'" style="width: 150px;">产品信息查询</a>
         </div>
         <div title="系统管理"  data-options="iconCls:'icon-item'" style="padding:10px">
             <a href="javascript:openTab('用户管理','/user/index','icon-user')" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-user'" style="width: 150px;">用户管理</a>

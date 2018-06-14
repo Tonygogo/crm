@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>客户构成分析</title>
+
+		<script type="text/javascript" src="http://cdn.hcharts.cn/jquery/jquery-1.8.3.min.js"></script>
+
+		<script type="text/javascript">
+            $(function () {
+                //var categories = ['合作伙伴', '大客户','战略合作客户','普通客户','重点开发客户'];
+                //var data = [49.9, 71.5, 106.4, 129.2, 144.0];
+
+                var categories = [];
+                var data = [];
+                /*$.ajax({
+                   url: '../customer_component/',
+                   dataType: 'json',
+                   type: 'GET',
+                   async: false, // 是否异步
+                   success: function (resp) {
+                        for (var i =0; i < resp.length; i++){
+                            r = resp[i]
+                            categories.push(r.level)
+                            data.push(r.amount)
+                        }
+                    }
+                });*/
+
+                var chart = Highcharts.chart('container', {
+                    chart: {
+                        type: 'column',
+                        events: {
+                            load: function() {
+                                $.get('../customer_component/', {}, function(resp){
+                                    var xAxis = [];
+                                    var yAxis = [];
+                                    for (var i =0; i < resp.length; i++){
+                                        r = resp[i]
+                                        xAxis.push(r.level);
+                                        yAxis.push(r.amount);
+                                    }
+                                    chart.xAxis[0].categories = xAxis;
+                                    chart.series[0].setData(yAxis);
+                                })
+                            }
+                        }
+                    },
+                    title: {
+                        text: '客户构成分析'
+                    },
+                    xAxis: {
+                        categories: [],
+                        crosshair: true
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: '客户数量（个）'
+                        }
+                    },
+                    tooltip: {
+                        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                            '<td style="padding:0"><b>{point.y} 个</b></td></tr>',
+                        footerFormat: '</table>',
+                        shared: true,
+                        useHTML: true
+                    },
+                    plotOptions: {
+                        column: {
+                            pointPadding: 0.2,
+                            borderWidth: 0
+                        }
+                    },
+                    series: [{
+                        name: '客户',
+                        data: data
+
+                    }]
+                });
+            });
+		</script>
+	</head>
+	<body>
+<script src="http://cdn.hcharts.cn/highcharts/highcharts.js"></script>
+<script src="http://cdn.hcharts.cn/highcharts/modules/exporting.js"></script>
+
+<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+	</body>
+</html>

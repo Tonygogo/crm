@@ -341,8 +341,7 @@ def loss_index(request):
 # 分页查询客户流失列表
 @require_GET
 def customer_loss_query(request):
-    page_size = request.GET.get('rows', 10)
-    page = request.GET.get('page', 1)
+
     select = {'lastOrderTime': "SELECT DATE_FORMAT(last_order_time, '%%Y-%%m-%%d %%H:%%i:%%s')",
               'confirmLossTime': "SELECT DATE_FORMAT(confirm_loss_time, '%%Y-%%m-%%d %%H:%%i:%%s')"
               }
@@ -361,6 +360,8 @@ def customer_loss_query(request):
     if state:
         queryset = queryset.filter(state=state)
 
+    page_size = request.GET.get('rows', 10)
+    page = request.GET.get('page', 1)
     # 构建分页对象
     p = Paginator(queryset, page_size)
 

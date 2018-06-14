@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>客户贡献报表</title>
+    <link rel="stylesheet" type="text/css" href="{% static "/jquery-easyui-1.3.3/themes/metro/easyui.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "/jquery-easyui-1.3.3/themes/icon.css" %}">
+    <script type="text/javascript" src="{% static "/jquery-easyui-1.3.3/jquery.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "/jquery-easyui-1.3.3/jquery.easyui.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "/jquery-easyui-1.3.3/locale/easyui-lang-zh_CN.js" %}"></script>
+    <script type="text/javascript" src="{% static "/jquery-easyui-1.3.3/jquery.edatagrid.js" %}"></script>
+    <script type="text/javascript" src="{% static "/js/report.js" %}"></script>
+</head>
+<body>
+
+    {# 数据列表 #}
+    <table id="dg" class="easyui-datagrid" title="客户贡献分析"
+                data-options="pagination:true,singleSelect:false,collapsible:true,url:'{% url "report:customer_contribute" %}',
+                method:'GET'" toolbar="#tb" fit="True" rownumbers="true", fitColumns="true">
+        <thead>
+            <tr>
+                <th field="cb" checkbox="true" align="center"></th>
+                <th field="id" width="50" align="center">编号</th>
+                <th field="name" width="200" align="center" >客户名称</th>
+                <th field="sum" width="200" align="center" >订单总金额（元）</th>
+            </tr>
+        </thead>
+    </table>
+
+    {# toolbar 工具栏 #}
+    <div id="tb" style="padding:5px;height:auto">
+        <div>
+            客户名称：<input type="text" id="s_customerName" size="20" onkeydown="if(event.keyCode==13) searchCustomerContribute()"/>
+            <a href="javascript:searchCustomerContribute()" class="easyui-linkbutton" iconCls="icon-search">Search</a>
+        </div>
+    </div>
+
+</body>
+</html>

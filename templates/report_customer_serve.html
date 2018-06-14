@@ -1,0 +1,71 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>客户服务报表</title>
+
+		<script type="text/javascript" src="http://cdn.hcharts.cn/jquery/jquery-1.8.3.min.js"></script>
+
+		<script type="text/javascript">
+                $(function () {
+                    var data = [];
+                    $.ajax({
+                       url: '../customer_serve/',
+                       dataType: 'json',
+                       type: 'GET',
+                       async: false, // 是否异步
+                       success: function (resp) {
+                            for (var i =0; i < resp.length; i++){
+                                r = resp[i]
+                                var d = {name: r.serveType, y: r.amount};
+                                if(r.serveType == '投诉'){
+                                    d.sliced = true;
+                                    d.selected = true
+                                }
+                                data.push(d)
+                            }
+                        }
+                    });
+
+                    Highcharts.chart('container', {
+                        chart: {
+                            plotBackgroundColor: null,
+                            plotBorderWidth: null,
+                            plotShadow: false,
+                            type: 'pie'
+                        },
+                        title: {
+                            text: '客户服务分析'
+                        },
+                        tooltip: {
+                            // pointFormat: '<b>{series.name}: {point.percentage:.1f}%</b>'
+                             pointFormat: '<b>{point.percentage:.1f}%</b>'
+                        },
+                        plotOptions: {
+                            pie: {
+                                allowPointSelect: true,
+                                cursor: 'pointer',
+                                dataLabels: {
+                                    enabled: true,
+                                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                                    style: {
+                                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                                    }
+                                }
+                            }
+                        },
+                        series: [{
+                            name: '服务类型',
+                            colorByPoint: true,
+                            data: data
+                        }]
+                    });
+                });
+		</script>
+	</head>
+	<body>
+        <script src="http://cdn.hcharts.cn/highcharts/highcharts.js"></script>
+        <script src="http://cdn.hcharts.cn/highcharts/modules/exporting.js"></script>
+        <div id="container" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto"></div>
+    </body>
+</html>
